@@ -3,22 +3,26 @@ const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "");
 export type PortfolioResponse = {
   id: number;
   name: string;
-  description: string | null;
+  baseCurrency: string;
 };
 
 export type PortfolioSummaryResponse = {
   portfolioId: number;
+  portfolioName: string;
+  baseCurrency: string;
+  holdingCount: number;
   totalCost: number;
   totalMarketValue: number;
   unrealizedGainLoss: number;
   unrealizedGainLossPercent: number;
-  holdingCount: number;
+  updatedAt: string;
 };
 
 export type HoldingResponse = {
   id: number;
-  portfolioId: number;
   assetId: number;
+  symbol: string;
+  name: string;
   quantity: number;
   averageCost: number;
   latestPrice: number | null;

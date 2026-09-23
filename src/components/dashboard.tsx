@@ -33,11 +33,11 @@ function HoldingsTable({ holdings }: { holdings: HoldingResponse[] }) {
   return (
     <div className="table-scroll">
       <table className="holdings-table">
-        <thead><tr><th>Asset ID</th><th>Quantity</th><th>Average cost</th><th>Cost basis</th><th>Latest price</th><th>Market value</th><th>Gain / loss</th></tr></thead>
+        <thead><tr><th>Asset</th><th>Quantity</th><th>Average cost</th><th>Cost basis</th><th>Latest price</th><th>Market value</th><th>Gain / loss</th></tr></thead>
         <tbody>{holdings.map((holding) => {
           const missingPrice = holding.latestPrice === null;
           return <tr key={holding.id}>
-            <td><strong>{holding.assetId}</strong></td>
+            <td><strong>{holding.symbol}</strong><span>{holding.name}</span></td>
             <td>{amount(holding.quantity)}</td>
             <td>{amount(holding.averageCost)}</td>
             <td>{amount(holding.costBasis)}</td>
