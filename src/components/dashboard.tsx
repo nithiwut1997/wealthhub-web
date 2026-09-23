@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell } from "@/components/app-shell";
-import { wealthHubApi, type HoldingValuation } from "@/lib/api";
+import { wealthHubApi, type HoldingResponse } from "@/lib/api";
 
 const numberFormatter = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 });
 
@@ -25,7 +25,7 @@ function ErrorState({ message, retry }: { message: string; retry: () => void }) 
   return <div className="state-message" role="alert"><h3>We couldn&rsquo;t load this view</h3><p>{message}</p><button className="secondary-button" type="button" onClick={retry}>Try again</button></div>;
 }
 
-function HoldingsTable({ holdings }: { holdings: HoldingValuation[] }) {
+function HoldingsTable({ holdings }: { holdings: HoldingResponse[] }) {
   if (holdings.length === 0) {
     return <div className="state-message"><h3>No holdings</h3><p>This portfolio does not contain any holdings yet.</p></div>;
   }
@@ -33,16 +33,17 @@ function HoldingsTable({ holdings }: { holdings: HoldingValuation[] }) {
   return (
     <div className="table-scroll">
       <table className="holdings-table">
-        <thead><tr><th>Asset</th><th>Quantity</th><th>Average cost</th><th>Latest price</th><th>Market value</th><th>Gain / loss</th></tr></thead>
+        <thead><tr><th>Asset ID</th><th>Quantity</th><th>Average cost</th><th>Cost basis</th><th>Latest price</th><th>Market value</th><th>Gain / loss</th></tr></thead>
         <tbody>{holdings.map((holding) => {
           const missingPrice = holding.latestPrice === null;
-          return <tr key={holding.assetId}>
-            <td><strong>{holding.symbol}</strong><span>{holding.name}</span></td>
+          return <tr key={holding.id}>
+            <td><strong>{holding.assetId}</strong></td>
             <td>{amount(holding.quantity)}</td>
             <td>{amount(holding.averageCost)}</td>
+            <td>{amount(holding.costBasis)}</td>
             <td>{missingPrice ? <span className="missing-price">Price unavailable</span> : amount(holding.latestPrice)}</td>
             <td>{holding.marketValue === null ? "—" : amount(holding.marketValue)}</td>
-            <td className={holding.unrealizedGainLoss === null ? "" : holding.unrealizedGainLoss >= 0 ? "positive" : "negative"}>{holding.unrealizedGainLoss === null ? "—" : amount(holding.unrealizedGainLoss)}</td>
+            <td className={holding.unrealizedPnL === null ? "" : holding.unrealizedPnL >= 0 ? "positive" : "negative"}>{holding.unrealizedPnL === null ? "—" : amount(holding.unrealizedPnL)}</td>
           </tr>;
         })}</tbody>
       </table>
@@ -58,9 +59,14 @@ export function Dashboard() {
     ? selectedId
     : portfoliosQuery.data?.[0]?.id ?? null;
 
-  const valuationQuery = useQuery({
-    queryKey: ["portfolio-valuation", activePortfolioId],
-    queryFn: () => wealthHubApi.getPortfolioValuation(activePortfolioId!),
+  const summaryQuery = useQuery({
+    queryKey: ["portfolio-summary", activePortfolioId],
+    queryFn: () => wealthHubApi.getPortfolioSummary(activePortfolioId!),
+    enabled: activePortfolioId !== null,
+  });
+  const holdingsQuery = useQuery({
+    queryKey: ["portfolio-holdings", activePortfolioId],
+    queryFn: () => wealthHubApi.getHoldings(activePortfolioId!),
     enabled: activePortfolioId !== null,
   });
 
@@ -79,15 +85,16 @@ export function Dashboard() {
 
     {selectedPortfolio && <>
       <section className="summary-grid" aria-label={`${selectedPortfolio.name} valuation`}>
-        <article className="summary-card featured"><p>Market value</p><div className="empty-value">{valuationQuery.data ? amount(valuationQuery.data.totalMarketValue) : "—"}</div><span>{valuationQuery.isPending ? "Loading current valuation…" : selectedPortfolio.name}</span></article>
-        <article className="summary-card"><p>Total cost</p><div className="empty-value">{valuationQuery.data ? amount(valuationQuery.data.totalCost) : "—"}</div><span>Across current holdings</span></article>
-        <article className="summary-card"><p>Unrealized gain / loss</p><div className={`empty-value ${valuationQuery.data && valuationQuery.data.totalUnrealizedGainLoss < 0 ? "negative" : ""}`}>{valuationQuery.data ? amount(valuationQuery.data.totalUnrealizedGainLoss) : "—"}</div><span>Based on available latest prices</span></article>
+        <article className="summary-card featured"><p>Market value</p><div className="empty-value">{summaryQuery.data ? amount(summaryQuery.data.totalMarketValue) : "—"}</div><span>{summaryQuery.isPending ? "Loading current summary…" : selectedPortfolio.name}</span></article>
+        <article className="summary-card"><p>Total cost</p><div className="empty-value">{summaryQuery.data ? amount(summaryQuery.data.totalCost) : "—"}</div><span>Across current holdings</span></article>
+        <article className="summary-card"><p>Unrealized gain / loss</p><div className={`empty-value ${summaryQuery.data && summaryQuery.data.unrealizedGainLoss < 0 ? "negative" : ""}`}>{summaryQuery.data ? amount(summaryQuery.data.unrealizedGainLoss) : "—"}</div><span>{summaryQuery.data ? `${amount(summaryQuery.data.unrealizedGainLossPercent)}% · ${summaryQuery.data.holdingCount} holdings` : "Based on available latest prices"}</span></article>
       </section>
       <section className="content-card">
-        <div className="section-heading"><div><p className="eyebrow">Current positions</p><h2>Holdings</h2></div>{valuationQuery.data && <span className="quiet-label">{valuationQuery.data.holdings.length} {valuationQuery.data.holdings.length === 1 ? "holding" : "holdings"}</span>}</div>
-        {valuationQuery.isPending && <div className="state-message" aria-live="polite"><div className="loading-mark" /><h3>Loading valuation</h3><p>Fetching the latest available holding values…</p></div>}
-        {valuationQuery.isError && <ErrorState message={valuationQuery.error.message} retry={() => void valuationQuery.refetch()} />}
-        {valuationQuery.data && <HoldingsTable holdings={valuationQuery.data.holdings} />}
+        <div className="section-heading"><div><p className="eyebrow">Current positions</p><h2>Holdings</h2></div>{holdingsQuery.data && <span className="quiet-label">{holdingsQuery.data.length} {holdingsQuery.data.length === 1 ? "holding" : "holdings"}</span>}</div>
+        {summaryQuery.isError && <ErrorState message={summaryQuery.error.message} retry={() => void summaryQuery.refetch()} />}
+        {holdingsQuery.isPending && <div className="state-message" aria-live="polite"><div className="loading-mark" /><h3>Loading holdings</h3><p>Fetching the latest available holding values…</p></div>}
+        {holdingsQuery.isError && <ErrorState message={holdingsQuery.error.message} retry={() => void holdingsQuery.refetch()} />}
+        {holdingsQuery.data && <HoldingsTable holdings={holdingsQuery.data} />}
       </section>
     </>}
   </AppShell>;

@@ -1,27 +1,30 @@
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "");
 
-export type Portfolio = {
+export type PortfolioResponse = {
   id: number;
   name: string;
+  description: string | null;
 };
 
-export type HoldingValuation = {
+export type PortfolioSummaryResponse = {
+  portfolioId: number;
+  totalCost: number;
+  totalMarketValue: number;
+  unrealizedGainLoss: number;
+  unrealizedGainLossPercent: number;
+  holdingCount: number;
+};
+
+export type HoldingResponse = {
+  id: number;
+  portfolioId: number;
   assetId: number;
-  symbol: string;
-  name: string;
   quantity: number;
   averageCost: number;
   latestPrice: number | null;
+  costBasis: number;
   marketValue: number | null;
-  unrealizedGainLoss: number | null;
-};
-
-export type PortfolioValuation = {
-  portfolioId: number;
-  totalMarketValue: number;
-  totalCost: number;
-  totalUnrealizedGainLoss: number;
-  holdings: HoldingValuation[];
+  unrealizedPnL: number | null;
 };
 
 type ApiErrorBody = {
@@ -53,7 +56,9 @@ async function get<T>(path: string): Promise<T> {
 }
 
 export const wealthHubApi = {
-  getPortfolios: () => get<Portfolio[]>("/api/portfolios"),
-  getPortfolioValuation: (portfolioId: number) =>
-    get<PortfolioValuation>(`/api/portfolios/${portfolioId}/valuation`),
+  getPortfolios: () => get<PortfolioResponse[]>("/api/v1/portfolios"),
+  getPortfolioSummary: (portfolioId: number) =>
+    get<PortfolioSummaryResponse>(`/api/v1/portfolios/${portfolioId}/summary`),
+  getHoldings: (portfolioId: number) =>
+    get<HoldingResponse[]>(`/api/v1/holdings?portfolioId=${encodeURIComponent(portfolioId)}`),
 };
