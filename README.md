@@ -17,7 +17,15 @@ Open [http://localhost:3000](http://localhost:3000).
 - `src/components` — small shared application-shell, navigation, and presentation components.
 - `public` — static assets (when added).
 
-The project intentionally has no data layer yet. API access and server-state tooling can be introduced in a dedicated module when WealthHub connects to its Spring Boot backend.
+The dashboard uses TanStack Query and a small typed client to call the WealthHub Spring Boot API. It loads portfolios from `GET /api/portfolios` and the selected portfolio's summary and holding valuations from `GET /api/portfolios/{portfolioId}/valuation`.
+
+Copy the example environment file before starting the app:
+
+```bash
+cp .env.example .env.local
+```
+
+`NEXT_PUBLIC_API_BASE_URL` must point to the running backend (the example uses `http://localhost:8080`). Because requests are made by the browser, the backend must allow the frontend origin when the two applications run on different origins.
 
 ## Scripts
 
