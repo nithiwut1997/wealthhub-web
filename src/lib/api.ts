@@ -42,6 +42,19 @@ export type AssetResponse = {
   isActive: boolean;
 };
 
+export type CreatePortfolioRequest = {
+  name: string;
+};
+
+export type CreateAssetRequest = {
+  symbol: string;
+  name: string;
+  market: string;
+  type: AssetResponse["type"];
+  currency: string;
+  externalId: string | null;
+};
+
 export type TransactionType = "BUY" | "SELL";
 
 export type TransactionResponse = {
@@ -113,11 +126,15 @@ async function post<TResponse, TRequest>(path: string, request: TRequest): Promi
 
 export const wealthHubApi = {
   getPortfolios: () => get<PortfolioResponse[]>("/api/v1/portfolios"),
+  createPortfolio: (request: CreatePortfolioRequest) =>
+    post<PortfolioResponse, CreatePortfolioRequest>("/api/v1/portfolios", request),
   getPortfolioSummary: (portfolioId: number) =>
     get<PortfolioSummaryResponse>(`/api/v1/portfolios/${portfolioId}/summary`),
   getHoldings: (portfolioId: number) =>
     get<HoldingResponse[]>(`/api/v1/holdings?portfolioId=${encodeURIComponent(portfolioId)}`),
   getAssets: () => get<AssetResponse[]>("/api/v1/assets"),
+  createAsset: (request: CreateAssetRequest) =>
+    post<AssetResponse, CreateAssetRequest>("/api/v1/assets", request),
   getTransactions: (portfolioId: number) =>
     get<TransactionResponse[]>(`/api/v1/transactions?portfolioId=${encodeURIComponent(portfolioId)}`),
   createTransaction: (request: CreateTransactionRequest) =>

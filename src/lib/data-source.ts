@@ -1,4 +1,4 @@
-import { wealthHubApi, type AssetResponse, type HoldingResponse, type PortfolioResponse, type PortfolioSummaryResponse, type TransactionResponse } from "@/lib/api";
+import { wealthHubApi, type AssetResponse, type CreateAssetRequest, type CreatePortfolioRequest, type HoldingResponse, type PortfolioResponse, type PortfolioSummaryResponse, type TransactionResponse } from "@/lib/api";
 import { demoDataSource } from "@/lib/demo-data";
 
 export type DataMode = "demo" | "api";
@@ -9,6 +9,8 @@ export type WealthHubDataSource = {
   getHoldings: (portfolioId: number) => Promise<HoldingResponse[]>;
   getAssets: () => Promise<AssetResponse[]>;
   getTransactions: (portfolioId: number) => Promise<TransactionResponse[]>;
+  createPortfolio?: (request: CreatePortfolioRequest) => Promise<PortfolioResponse>;
+  createAsset?: (request: CreateAssetRequest) => Promise<AssetResponse>;
 };
 
 export const dataSources: Record<DataMode, WealthHubDataSource> = {
