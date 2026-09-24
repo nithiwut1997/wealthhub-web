@@ -1,9 +1,10 @@
-import { wealthHubApi, type AssetResponse, type CreateAssetRequest, type CreatePortfolioRequest, type HoldingResponse, type PortfolioResponse, type PortfolioSummaryResponse, type TransactionResponse } from "@/lib/api";
+import { wealthHubApi, type AssetResponse, type CreateAssetRequest, type CreatePortfolioRequest, type DashboardResponse, type HoldingResponse, type PortfolioResponse, type PortfolioSummaryResponse, type TransactionResponse } from "@/lib/api";
 import { demoDataSource } from "@/lib/demo-data";
 
 export type DataMode = "demo" | "api";
 
 export type WealthHubDataSource = {
+  getDashboard: () => Promise<DashboardResponse>;
   getPortfolios: () => Promise<PortfolioResponse[]>;
   getPortfolioSummary: (portfolioId: number) => Promise<PortfolioSummaryResponse>;
   getHoldings: (portfolioId: number) => Promise<HoldingResponse[]>;
