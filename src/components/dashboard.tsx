@@ -40,13 +40,12 @@ function HoldingsTable({ holdings }: { holdings: HoldingResponse[] }) {
       <table className="holdings-table">
         <thead><tr><th>Asset</th><th>Quantity</th><th>Average cost</th><th>Cost basis</th><th>Latest price</th><th>Market value</th><th>Gain / loss</th></tr></thead>
         <tbody>{holdings.map((holding) => {
-          const missingPrice = holding.latestPrice === null;
           return <tr key={holding.id}>
             <td><strong>{holding.symbol}</strong><span>{holding.name}</span></td>
             <td>{amount(holding.quantity)}</td>
             <td>{amount(holding.averageCost)}</td>
             <td>{amount(holding.costBasis)}</td>
-            <td>{missingPrice ? <span className="missing-price">Price unavailable</span> : amount(holding.latestPrice)}</td>
+            <td>{holding.latestPrice === null ? <span className="missing-price">Price unavailable</span> : amount(holding.latestPrice)}</td>
             <td>{holding.marketValue === null ? "—" : amount(holding.marketValue)}</td>
             <td className={holding.unrealizedPnL === null ? "" : holding.unrealizedPnL >= 0 ? "positive" : "negative"}>{holding.unrealizedPnL === null ? "—" : amount(holding.unrealizedPnL)}</td>
           </tr>;
