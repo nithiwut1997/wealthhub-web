@@ -1,15 +1,19 @@
 # Production deployment
 
-The production deployment is implemented by `.github/workflows/deploy.yml`. Create
-a GitHub Environment named `production` and define these environment variables:
+The production deployment is implemented by `.github/workflows/deploy.yml` and uses
+the GitHub Environment named `production`.
+
+Configure these GitHub Environment secrets:
 
 - `AWS_DEPLOY_ROLE_ARN`: IAM role assumed by GitHub Actions through OIDC
 - `AWS_S3_BUCKET`: destination bucket name
 - `CLOUDFRONT_DISTRIBUTION_ID`: distribution to invalidate after upload
-- `NEXT_PUBLIC_API_BASE_URL`: public WealthHub Spring Boot API base URL embedded at
-  build time
 
-These values are deployment identifiers or browser-visible configuration, so they
-are expected as GitHub Environment variables rather than secrets. The AWS region is
-fixed in the workflow as `ap-southeast-1`. The bucket, distribution, IAM role, OIDC
-trust, DNS, and other AWS resources are managed separately and are not created here.
+Configure this GitHub Environment variable:
+
+- `NEXT_PUBLIC_API_BASE_URL`: public WealthHub Spring Boot API base URL
+
+`NEXT_PUBLIC_API_BASE_URL` is intentionally a variable rather than a secret because
+Next.js embeds it into the browser bundle at build time. The AWS region is fixed in
+the workflow as `ap-southeast-1`. The bucket, distribution, IAM role, OIDC trust,
+DNS, and other AWS resources are managed separately and are not created here.
