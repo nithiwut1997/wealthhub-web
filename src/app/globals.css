@@ -86,6 +86,35 @@ h3 { margin-bottom: 9px; font-size: 20px; font-weight: 670; letter-spacing: -.02
 .secondary-button { padding: 11px 16px; color: var(--accent-dark); background: var(--surface-soft); }
 .secondary-button:hover { background: var(--accent-pale); }
 .mobile-header, .mobile-nav { display: none; }
+.header-actions { display: flex; align-items: flex-end; gap: 12px; }
+.transactions-layout { display: grid; gap: 18px; max-width: 1180px; margin: 0 auto; }
+.transactions-layout .content-card { width: 100%; }
+.transaction-composer { min-height: 0; }
+.close-button { width: 34px; height: 34px; border: 0; border-radius: 50%; color: var(--muted); background: var(--surface-soft); cursor: pointer; font-size: 22px; line-height: 1; }
+.close-button:hover { color: var(--ink); background: var(--accent-pale); }
+.transaction-mark { width: 54px; height: 54px; display: grid; place-items: center; margin-bottom: 18px; border-radius: 18px; color: var(--accent); background: var(--accent-pale); font-size: 24px; font-weight: 650; }
+.transaction-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; padding-top: 24px; }
+.form-field { display: grid; gap: 8px; color: var(--muted); font-size: 12px; font-weight: 650; }
+.form-field input, .form-field select { width: 100%; min-height: 46px; padding: 11px 13px; border: 1px solid var(--line); border-radius: var(--radius-sm); outline: none; color: var(--ink); background: var(--surface); font: inherit; font-weight: 520; }
+.form-field input:focus, .form-field select:focus { border-color: var(--accent-bright); box-shadow: 0 0 0 3px var(--accent-pale); }
+.form-field input[readonly] { color: var(--muted); background: var(--surface-soft); }
+.type-field { grid-column: 1 / -1; padding: 0; border: 0; }
+.type-field legend { margin-bottom: 8px; color: var(--muted); font-size: 12px; font-weight: 650; }
+.type-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.type-options label { position: relative; display: grid; gap: 3px; padding: 13px 15px 13px 42px; border: 1px solid var(--line); border-radius: var(--radius-sm); cursor: pointer; }
+.type-options label.selected { border-color: var(--accent-bright); background: var(--accent-pale); }
+.type-options input { position: absolute; left: 15px; top: 17px; accent-color: var(--accent); }
+.type-options strong { font-size: 13px; }
+.type-options span { color: var(--muted); font-size: 11px; font-weight: 450; }
+.form-error { grid-column: 1 / -1; margin: 0; padding: 11px 13px; border-radius: 10px; color: #8b3440; background: #fcecef; font-size: 12px; line-height: 1.5; }
+.form-error button { margin-left: 8px; padding: 0; border: 0; color: inherit; background: transparent; cursor: pointer; font: inherit; font-weight: 700; text-decoration: underline; }
+.form-actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 10px; padding-top: 2px; }
+.primary-button:disabled, .secondary-button:disabled { cursor: not-allowed; opacity: .58; transform: none; }
+.success-message { padding: 13px 16px; border: 1px solid #cae5db; border-radius: var(--radius-sm); color: #176047; background: #edf8f4; font-size: 13px; font-weight: 600; }
+.transactions-table th:first-child, .transactions-table td:first-child { min-width: 168px; }
+.transaction-type { display: inline-flex; min-width: 48px; align-items: center; justify-content: center; padding: 5px 8px; border-radius: 99px; color: var(--accent-dark); background: var(--surface-soft); font-size: 11px; font-weight: 750; text-transform: uppercase; }
+.transaction-type.buy { color: #176047; background: #edf8f4; }
+.transaction-type.sell { color: #8b3440; background: #fcecef; }
 
 @media (max-width: 850px) {
   .sidebar { display: none; }
@@ -101,8 +130,12 @@ h3 { margin-bottom: 9px; font-size: 20px; font-weight: 670; letter-spacing: -.02
 
 @media (max-width: 680px) {
   .page-header { align-items: flex-start; flex-direction: column; margin-bottom: 28px; }
+  .header-actions { width: 100%; align-items: stretch; flex-direction: column; }
   .portfolio-picker { width: 100%; }
   .primary-button { width: 100%; }
+  .transaction-form, .type-options { grid-template-columns: 1fr; }
+  .form-actions { flex-direction: column-reverse; }
+  .form-actions .secondary-button, .form-actions .primary-button { width: 100%; }
   .summary-grid { grid-template-columns: 1fr; }
   .summary-card { min-height: auto; padding: 20px; }
   .summary-card p { margin-bottom: 20px; }

@@ -3,7 +3,12 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell } from "@/components/app-shell";
-import { wealthHubApi, type HoldingResponse } from "@/lib/api";
+import { type HoldingResponse } from "@/lib/api";
+import {
+  portfolioHoldingsQueryOptions,
+  portfoliosQueryOptions,
+  portfolioSummaryQueryOptions,
+} from "@/lib/queries";
 
 const numberFormatter = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 });
 
@@ -52,23 +57,15 @@ function HoldingsTable({ holdings }: { holdings: HoldingResponse[] }) {
 }
 
 export function Dashboard() {
-  const portfoliosQuery = useQuery({ queryKey: ["portfolios"], queryFn: wealthHubApi.getPortfolios });
+  const portfoliosQuery = useQuery(portfoliosQueryOptions());
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
   const activePortfolioId = portfoliosQuery.data?.some(({ id }) => id === selectedId)
     ? selectedId
     : portfoliosQuery.data?.[0]?.id ?? null;
 
-  const summaryQuery = useQuery({
-    queryKey: ["portfolio-summary", activePortfolioId],
-    queryFn: () => wealthHubApi.getPortfolioSummary(activePortfolioId!),
-    enabled: activePortfolioId !== null,
-  });
-  const holdingsQuery = useQuery({
-    queryKey: ["portfolio-holdings", activePortfolioId],
-    queryFn: () => wealthHubApi.getHoldings(activePortfolioId!),
-    enabled: activePortfolioId !== null,
-  });
+  const summaryQuery = useQuery(portfolioSummaryQueryOptions(activePortfolioId));
+  const holdingsQuery = useQuery(portfolioHoldingsQueryOptions(activePortfolioId));
 
   const selectedPortfolio = portfoliosQuery.data?.find(({ id }) => id === activePortfolioId);
   const isInitialLoading = portfoliosQuery.isPending;

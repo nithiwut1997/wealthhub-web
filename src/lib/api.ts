@@ -31,6 +31,39 @@ export type HoldingResponse = {
   unrealizedPnL: number | null;
 };
 
+export type AssetResponse = {
+  id: number;
+  symbol: string;
+  name: string;
+  market: string;
+  type: "STOCK" | "MUTUAL_FUND";
+  currency: string;
+  externalId: string | null;
+  isActive: boolean;
+};
+
+export type TransactionType = "BUY" | "SELL";
+
+export type TransactionResponse = {
+  id: number;
+  portfolioId: number;
+  assetId: number;
+  assetSymbol: string;
+  type: TransactionType;
+  quantity: number;
+  price: number;
+  realizedPnL: number | null;
+  createdAt: string;
+};
+
+export type CreateTransactionRequest = {
+  portfolioId: number;
+  assetId: number;
+  type: TransactionType;
+  quantity: number;
+  price: number;
+};
+
 type ApiErrorBody = {
   message?: string;
 };
@@ -59,10 +92,34 @@ async function get<T>(path: string): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+async function post<TResponse, TRequest>(path: string, request: TRequest): Promise<TResponse> {
+  if (!apiBaseUrl) {
+    throw new ApiError("NEXT_PUBLIC_API_BASE_URL is not configured.", 0);
+  }
+
+  const response = await fetch(`${apiBaseUrl}${path}`, {
+    method: "POST",
+    headers: { Accept: "application/json", "Content-Type": "application/json" },
+    body: JSON.stringify(request),
+  });
+
+  if (!response.ok) {
+    const body = (await response.json().catch(() => null)) as ApiErrorBody | null;
+    throw new ApiError(body?.message ?? `The WealthHub API returned ${response.status}.`, response.status);
+  }
+
+  return response.json() as Promise<TResponse>;
+}
+
 export const wealthHubApi = {
   getPortfolios: () => get<PortfolioResponse[]>("/api/v1/portfolios"),
   getPortfolioSummary: (portfolioId: number) =>
     get<PortfolioSummaryResponse>(`/api/v1/portfolios/${portfolioId}/summary`),
   getHoldings: (portfolioId: number) =>
     get<HoldingResponse[]>(`/api/v1/holdings?portfolioId=${encodeURIComponent(portfolioId)}`),
+  getAssets: () => get<AssetResponse[]>("/api/v1/assets"),
+  getTransactions: (portfolioId: number) =>
+    get<TransactionResponse[]>(`/api/v1/transactions?portfolioId=${encodeURIComponent(portfolioId)}`),
+  createTransaction: (request: CreateTransactionRequest) =>
+    post<TransactionResponse, CreateTransactionRequest>("/api/v1/transactions", request),
 };
