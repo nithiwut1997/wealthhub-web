@@ -18,6 +18,32 @@ export type PortfolioSummaryResponse = {
   updatedAt: string;
 };
 
+export type DashboardPortfolioResponse = {
+  portfolioId: number;
+  portfolioName: string;
+  totalCost: number;
+  totalMarketValue: number;
+  unrealizedGainLoss: number;
+  unrealizedGainLossPercent: number;
+  holdingCount: number;
+  pricedHoldingCount: number;
+  missingPriceCount: number;
+};
+
+export type DashboardResponse = {
+  baseCurrency: string;
+  portfolioCount: number;
+  holdingCount: number;
+  assetCount: number;
+  totalCost: number;
+  totalMarketValue: number;
+  unrealizedGainLoss: number;
+  unrealizedGainLossPercent: number;
+  pricedHoldingCount: number;
+  missingPriceCount: number;
+  portfolios: DashboardPortfolioResponse[];
+};
+
 export type HoldingResponse = {
   id: number;
   assetId: number;
@@ -125,6 +151,7 @@ async function post<TResponse, TRequest>(path: string, request: TRequest): Promi
 }
 
 export const wealthHubApi = {
+  getDashboard: () => get<DashboardResponse>("/api/v1/dashboard"),
   getPortfolios: () => get<PortfolioResponse[]>("/api/v1/portfolios"),
   createPortfolio: (request: CreatePortfolioRequest) =>
     post<PortfolioResponse, CreatePortfolioRequest>("/api/v1/portfolios", request),

@@ -7,6 +7,10 @@ export const portfolioKeys = {
   holdings: (mode: DataMode, portfolioId: number | null) => ["portfolio-holdings", mode, portfolioId] as const,
 };
 
+export const dashboardKeys = {
+  all: (mode: DataMode) => ["dashboard", mode] as const,
+};
+
 export const assetKeys = {
   all: (mode: DataMode) => ["assets", mode] as const,
 };
@@ -19,6 +23,12 @@ export const portfoliosQueryOptions = (source: WealthHubDataSource, mode: DataMo
   queryOptions({
     queryKey: portfolioKeys.all(mode),
     queryFn: source.getPortfolios,
+  });
+
+export const dashboardQueryOptions = (source: WealthHubDataSource, mode: DataMode) =>
+  queryOptions({
+    queryKey: dashboardKeys.all(mode),
+    queryFn: source.getDashboard,
   });
 
 export const portfolioSummaryQueryOptions = (source: WealthHubDataSource, mode: DataMode, portfolioId: number | null) =>
