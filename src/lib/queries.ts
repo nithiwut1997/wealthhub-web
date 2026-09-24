@@ -7,6 +7,14 @@ export const portfolioKeys = {
   holdings: (portfolioId: number | null) => ["portfolio-holdings", portfolioId] as const,
 };
 
+export const assetKeys = {
+  all: ["assets"] as const,
+};
+
+export const transactionKeys = {
+  byPortfolio: (portfolioId: number | null) => ["transactions", portfolioId] as const,
+};
+
 export const portfoliosQueryOptions = () =>
   queryOptions({
     queryKey: portfolioKeys.all,
@@ -24,5 +32,18 @@ export const portfolioHoldingsQueryOptions = (portfolioId: number | null) =>
   queryOptions({
     queryKey: portfolioKeys.holdings(portfolioId),
     queryFn: () => wealthHubApi.getHoldings(portfolioId!),
+    enabled: portfolioId !== null,
+  });
+
+export const assetsQueryOptions = () =>
+  queryOptions({
+    queryKey: assetKeys.all,
+    queryFn: wealthHubApi.getAssets,
+  });
+
+export const transactionsQueryOptions = (portfolioId: number | null) =>
+  queryOptions({
+    queryKey: transactionKeys.byPortfolio(portfolioId),
+    queryFn: () => wealthHubApi.getTransactions(portfolioId!),
     enabled: portfolioId !== null,
   });
