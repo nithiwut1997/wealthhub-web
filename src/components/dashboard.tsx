@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell } from "@/components/app-shell";
 import { type HoldingResponse } from "@/lib/api";
+import { useDataSource } from "@/components/data-source-provider";
 import {
   portfolioHoldingsQueryOptions,
   portfoliosQueryOptions,
@@ -56,22 +57,23 @@ function HoldingsTable({ holdings }: { holdings: HoldingResponse[] }) {
 }
 
 export function Dashboard() {
-  const portfoliosQuery = useQuery(portfoliosQueryOptions());
+  const { mode, source } = useDataSource();
+  const portfoliosQuery = useQuery(portfoliosQueryOptions(source, mode));
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
   const activePortfolioId = portfoliosQuery.data?.some(({ id }) => id === selectedId)
     ? selectedId
     : portfoliosQuery.data?.[0]?.id ?? null;
 
-  const summaryQuery = useQuery(portfolioSummaryQueryOptions(activePortfolioId));
-  const holdingsQuery = useQuery(portfolioHoldingsQueryOptions(activePortfolioId));
+  const summaryQuery = useQuery(portfolioSummaryQueryOptions(source, mode, activePortfolioId));
+  const holdingsQuery = useQuery(portfolioHoldingsQueryOptions(source, mode, activePortfolioId));
 
   const selectedPortfolio = portfoliosQuery.data?.find(({ id }) => id === activePortfolioId);
   const isInitialLoading = portfoliosQuery.isPending;
 
   return <AppShell>
     <header className="page-header">
-      <div><p className="eyebrow">Overview</p><h1>Your wealth, clearly.</h1><p className="subtitle">Current portfolio value and holdings from WealthHub.</p></div>
+      <div><p className="eyebrow">Overview</p><h1>{mode === "demo" ? "A portfolio, clearly." : "Your wealth, clearly."}</h1><p className="subtitle">Current portfolio value and holdings from WealthHub.</p></div>
       {portfoliosQuery.data && portfoliosQuery.data.length > 0 && <label className="portfolio-picker"><span>Portfolio</span><select value={activePortfolioId ?? ""} onChange={(event) => setSelectedId(Number(event.target.value))}>{portfoliosQuery.data.map((portfolio) => <option key={portfolio.id} value={portfolio.id}>{portfolio.name}</option>)}</select></label>}
     </header>
 

@@ -3,6 +3,7 @@
 import { type FormEvent, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AppShell } from "@/components/app-shell";
+import { useDataSource } from "@/components/data-source-provider";
 import { wealthHubApi, type TransactionResponse, type TransactionType } from "@/lib/api";
 import {
   assetsQueryOptions,
@@ -29,7 +30,8 @@ function ErrorState({ title, message, retry }: { title: string; message: string;
 }
 
 function TransactionHistory({ portfolioId, portfolioName }: { portfolioId: number; portfolioName: string }) {
-  const transactionsQuery = useQuery(transactionsQueryOptions(portfolioId));
+  const { mode, source } = useDataSource();
+  const transactionsQuery = useQuery(transactionsQueryOptions(source, mode, portfolioId));
 
   return (
     <section className="content-card transaction-history">
@@ -69,7 +71,8 @@ function TransactionTable({ transactions }: { transactions: TransactionResponse[
 
 function TransactionForm({ portfolioId, portfolioName, close, saved }: { portfolioId: number; portfolioName: string; close: () => void; saved: () => void }) {
   const queryClient = useQueryClient();
-  const assetsQuery = useQuery(assetsQueryOptions());
+  const { mode, source } = useDataSource();
+  const assetsQuery = useQuery(assetsQueryOptions(source, mode));
   const [assetId, setAssetId] = useState<number | null>(null);
   const [type, setType] = useState<TransactionType>("BUY");
   const [quantity, setQuantity] = useState("");
@@ -82,9 +85,9 @@ function TransactionForm({ portfolioId, portfolioName, close, saved }: { portfol
     mutationFn: wealthHubApi.createTransaction,
     onSuccess: async (_, request) => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: transactionKeys.byPortfolio(request.portfolioId) }),
-        queryClient.invalidateQueries({ queryKey: portfolioKeys.summary(request.portfolioId) }),
-        queryClient.invalidateQueries({ queryKey: portfolioKeys.holdings(request.portfolioId) }),
+        queryClient.invalidateQueries({ queryKey: transactionKeys.byPortfolio(mode, request.portfolioId) }),
+        queryClient.invalidateQueries({ queryKey: portfolioKeys.summary(mode, request.portfolioId) }),
+        queryClient.invalidateQueries({ queryKey: portfolioKeys.holdings(mode, request.portfolioId) }),
       ]);
       saved();
       close();
@@ -131,7 +134,8 @@ function TransactionForm({ portfolioId, portfolioName, close, saved }: { portfol
 }
 
 export function Transactions() {
-  const portfoliosQuery = useQuery(portfoliosQueryOptions());
+  const { mode, source } = useDataSource();
+  const portfoliosQuery = useQuery(portfoliosQueryOptions(source, mode));
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [showComposer, setShowComposer] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -145,10 +149,10 @@ export function Transactions() {
   }
 
   return <AppShell>
-    <header className="page-header transactions-header"><div><p className="eyebrow">Activity</p><h1>Transactions</h1><p className="subtitle">Record and review the trades that shape your portfolio.</p></div>{portfoliosQuery.data && portfoliosQuery.data.length > 0 && <div className="header-actions"><label className="portfolio-picker"><span>Portfolio</span><select value={activePortfolioId ?? ""} onChange={(event) => selectPortfolio(Number(event.target.value))}>{portfoliosQuery.data.map((portfolio) => <option key={portfolio.id} value={portfolio.id}>{portfolio.name}</option>)}</select></label><button className="primary-button" type="button" aria-expanded={showComposer} onClick={() => { setShowComposer((open) => !open); setShowSuccess(false); }}><span aria-hidden="true">+</span> New transaction</button></div>}</header>
+    <header className="page-header transactions-header"><div><p className="eyebrow">Activity</p><h1>Transactions</h1><p className="subtitle">Record and review the trades that shape your portfolio.</p></div>{portfoliosQuery.data && portfoliosQuery.data.length > 0 && <div className="header-actions"><label className="portfolio-picker"><span>Portfolio</span><select value={activePortfolioId ?? ""} onChange={(event) => selectPortfolio(Number(event.target.value))}>{portfoliosQuery.data.map((portfolio) => <option key={portfolio.id} value={portfolio.id}>{portfolio.name}</option>)}</select></label>{mode === "api" ? <button className="primary-button" type="button" aria-expanded={showComposer} onClick={() => { setShowComposer((open) => !open); setShowSuccess(false); }}><span aria-hidden="true">+</span> New transaction</button> : <span className="demo-readonly">Sample activity is read-only</span>}</div>}</header>
     {portfoliosQuery.isPending && <section className="content-card state-message" aria-live="polite"><div className="loading-mark" /><h3>Loading your portfolios</h3><p>Preparing your transaction workspace…</p></section>}
     {portfoliosQuery.isError && <section className="content-card"><ErrorState title="We couldn’t load your portfolios" message={portfoliosQuery.error.message} retry={() => void portfoliosQuery.refetch()} /></section>}
     {portfoliosQuery.data?.length === 0 && <section className="content-card"><div className="section-heading"><div><p className="eyebrow">Get started</p><h2>Transaction activity</h2></div><span className="quiet-label">No portfolios</span></div><div className="empty-state"><div className="transaction-mark" aria-hidden="true">↗</div><h3>No portfolios yet</h3><p>Add a portfolio before recording its first transaction.</p></div></section>}
-    {selectedPortfolio && <div className="transactions-layout">{showSuccess && <div className="success-message" role="status">Transaction saved. Portfolio values and holdings are being refreshed.</div>}{showComposer && <TransactionForm portfolioId={selectedPortfolio.id} portfolioName={selectedPortfolio.name} close={() => setShowComposer(false)} saved={() => setShowSuccess(true)} />}<TransactionHistory portfolioId={selectedPortfolio.id} portfolioName={selectedPortfolio.name} /></div>}
+    {selectedPortfolio && <div className="transactions-layout">{showSuccess && mode === "api" && <div className="success-message" role="status">Transaction saved. Portfolio values and holdings are being refreshed.</div>}{showComposer && mode === "api" && <TransactionForm portfolioId={selectedPortfolio.id} portfolioName={selectedPortfolio.name} close={() => setShowComposer(false)} saved={() => setShowSuccess(true)} />}<TransactionHistory portfolioId={selectedPortfolio.id} portfolioName={selectedPortfolio.name} /></div>}
   </AppShell>;
 }
