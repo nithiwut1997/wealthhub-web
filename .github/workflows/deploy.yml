@@ -18,7 +18,6 @@ jobs:
   deploy:
     name: Build and deploy
     runs-on: ubuntu-latest
-    environment: production
     env:
       AWS_REGION: ap-southeast-1
       AWS_DEPLOY_ROLE_ARN: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
