@@ -58,47 +58,6 @@ jobs:
           test -n "$CLOUDFRONT_DISTRIBUTION_ID"
           test -n "$NEXT_PUBLIC_API_BASE_URL"
 
-      - name: Show AWS role details
-        shell: bash
-        run: |
-          if [[ "$AWS_DEPLOY_ROLE_ARN" =~ ^arn:aws[a-zA-Z-]*:iam::([0-9]{12}):role/(.+)$ ]]; then
-            echo "AWS account ID: ${BASH_REMATCH[1]}"
-            echo "AWS role name: ${BASH_REMATCH[2]##*/}"
-          else
-            echo "AWS_DEPLOY_ROLE_ARN is not a valid IAM role ARN" >&2
-            exit 1
-          fi
-
-      - name: Show GitHub OIDC claims
-        shell: bash
-        run: |
-          oidc_response="$(curl --fail --silent --show-error \
-            --header "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=sts.amazonaws.com")"
-
-          OIDC_RESPONSE="$oidc_response" node <<'NODE'
-          const response = JSON.parse(process.env.OIDC_RESPONSE);
-          const tokenParts = response.value?.split('.');
-
-          if (tokenParts?.length !== 3) {
-            throw new Error('GitHub did not return a valid OIDC JWT');
-          }
-
-          const payload = JSON.parse(Buffer.from(tokenParts[1], 'base64url'));
-          const claims = {
-            sub: payload.sub,
-            aud: payload.aud,
-            repository: payload.repository,
-            ref: payload.ref,
-          };
-
-          if (payload.environment !== undefined) {
-            claims.environment = payload.environment;
-          }
-
-          console.log(JSON.stringify(claims, null, 2));
-          NODE
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v5
         with:
