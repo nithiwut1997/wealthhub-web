@@ -13,8 +13,8 @@ const portfolio: PortfolioResponse = {
 };
 
 const assets: AssetResponse[] = [
-  { id: 2001, symbol: "KFSMART-A", name: "Krungsri Smart Fixed Income Fund", market: "TH", type: "MUTUAL_FUND", currency: "THB", externalId: "KFSMART-A", isActive: true },
-  { id: 2002, symbol: "K-GINCOME-A(A)", name: "K Global Income Fund", market: "TH", type: "MUTUAL_FUND", currency: "THB", externalId: "K-GINCOME-A(A)", isActive: true },
+  { id: 2001, symbol: "KFSMART-A", name: "Krungsri Smart Fixed Income Fund", market: "TH", type: "MUTUAL_FUND", currency: "THB", externalId: null, isActive: true },
+  { id: 2002, symbol: "K-GINCOME-A(A)", name: "K Global Income Fund", market: "TH", type: "MUTUAL_FUND", currency: "THB", externalId: null, isActive: true },
   { id: 2003, symbol: "SCBSET-A", name: "SCB SET Index Fund", market: "TH", type: "MUTUAL_FUND", currency: "THB", externalId: null, isActive: true },
 ];
 
