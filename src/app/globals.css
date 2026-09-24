@@ -117,6 +117,13 @@ h3 { margin-bottom: 9px; font-size: 20px; font-weight: 670; letter-spacing: -.02
 .primary-button:disabled, .secondary-button:disabled { cursor: not-allowed; opacity: .58; transform: none; }
 .success-message { padding: 13px 16px; border: 1px solid #cae5db; border-radius: var(--radius-sm); color: #176047; background: #edf8f4; font-size: 13px; font-weight: 600; }
 .demo-readonly { align-self: center; padding: 10px 12px; color: var(--muted); font-size: 12px; font-weight: 600; }
+.create-layout { display: grid; gap: 18px; max-width: 1180px; margin: -20px auto 18px; }
+.create-layout:empty { display: none; }
+.create-panel { width: 100%; min-height: 0; }
+.create-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; padding-top: 24px; }
+.compact-form { grid-template-columns: minmax(0, 1fr); }
+.form-field span em { float: right; color: #8a94a5; font-size: 10px; font-style: normal; font-weight: 600; text-transform: uppercase; }
+.form-field small { color: var(--muted); font-size: 11px; font-weight: 450; line-height: 1.5; }
 .transactions-table th:first-child, .transactions-table td:first-child { min-width: 168px; }
 .transaction-type { display: inline-flex; min-width: 48px; align-items: center; justify-content: center; padding: 5px 8px; border-radius: 99px; color: var(--accent-dark); background: var(--surface-soft); font-size: 11px; font-weight: 750; text-transform: uppercase; }
 .transaction-type.buy { color: #176047; background: #edf8f4; }
@@ -169,7 +176,7 @@ h3 { margin-bottom: 9px; font-size: 20px; font-weight: 670; letter-spacing: -.02
   .header-actions { width: 100%; align-items: stretch; flex-direction: column; }
   .portfolio-picker { width: 100%; }
   .primary-button { width: 100%; }
-  .transaction-form, .type-options { grid-template-columns: 1fr; }
+  .transaction-form, .create-form, .type-options { grid-template-columns: 1fr; }
   .form-actions { flex-direction: column-reverse; }
   .form-actions .secondary-button, .form-actions .primary-button { width: 100%; }
   .summary-grid { grid-template-columns: 1fr; }
