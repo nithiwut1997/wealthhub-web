@@ -11,6 +11,7 @@
 # local environment files
 .env*
 !.env.example
+!/deployment/prod/.env
 
 # logs and editor files
 npm-debug.log*

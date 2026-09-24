@@ -24,7 +24,6 @@ jobs:
       AWS_DEPLOY_ROLE_ARN: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
       AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
       CLOUDFRONT_DISTRIBUTION_ID: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
-      NEXT_PUBLIC_API_BASE_URL: ${{ vars.NEXT_PUBLIC_API_BASE_URL }}
 
     steps:
       - name: Check out repository
@@ -41,6 +40,9 @@ jobs:
 
       - name: Lint
         run: npm run lint
+
+      - name: Load production environment
+        run: cat deployment/prod/.env >> "$GITHUB_ENV"
 
       - name: Build static site
         run: npm run build
