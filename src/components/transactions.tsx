@@ -18,6 +18,23 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
   dateStyle: "medium",
   timeStyle: "short",
 });
+const mobileDateFormatter = new Intl.DateTimeFormat("en-US", { dateStyle: "medium" });
+
+function transactionDetails(transaction: TransactionResponse) {
+  const createdAt = new Date(transaction.createdAt);
+  const validDate = !Number.isNaN(createdAt.getTime());
+
+  return {
+    dateTime: transaction.createdAt,
+    desktopDate: validDate ? dateFormatter.format(createdAt) : transaction.createdAt,
+    mobileDate: validDate ? mobileDateFormatter.format(createdAt) : transaction.createdAt,
+    quantity: numberFormatter.format(transaction.quantity),
+    price: numberFormatter.format(transaction.price),
+    total: numberFormatter.format(transaction.quantity * transaction.price),
+    realizedPnL: transaction.realizedPnL === null ? "—" : numberFormatter.format(transaction.realizedPnL),
+    typeLabel: transaction.type === "BUY" ? "Buy" : "Sell",
+  };
+}
 
 function ErrorState({ title, message, retry }: { title: string; message: string; retry: () => void }) {
   return (
@@ -29,7 +46,7 @@ function ErrorState({ title, message, retry }: { title: string; message: string;
   );
 }
 
-function TransactionHistory({ portfolioId, portfolioName }: { portfolioId: number; portfolioName: string }) {
+function TransactionHistory({ portfolioId, portfolioName, currency }: { portfolioId: number; portfolioName: string; currency: string }) {
   const { mode, source } = useDataSource();
   const transactionsQuery = useQuery(transactionsQueryOptions(source, mode, portfolioId));
 
@@ -42,30 +59,40 @@ function TransactionHistory({ portfolioId, portfolioName }: { portfolioId: numbe
       {transactionsQuery.isPending && <div className="state-message" aria-live="polite"><div className="loading-mark" /><h3>Loading transactions</h3><p>Fetching your latest portfolio activity…</p></div>}
       {transactionsQuery.isError && <ErrorState title="We couldn’t load transactions" message={transactionsQuery.error.message} retry={() => void transactionsQuery.refetch()} />}
       {transactionsQuery.data?.length === 0 && <div className="empty-state"><div className="transaction-mark" aria-hidden="true">↕</div><h3>No transactions yet</h3><p>Record a buy or sell to begin building this portfolio&rsquo;s activity history.</p></div>}
-      {transactionsQuery.data && transactionsQuery.data.length > 0 && <TransactionTable transactions={transactionsQuery.data} />}
+      {transactionsQuery.data && transactionsQuery.data.length > 0 && <TransactionList transactions={transactionsQuery.data} currency={currency} />}
     </section>
   );
 }
 
-function TransactionTable({ transactions }: { transactions: TransactionResponse[] }) {
+function TransactionList({ transactions, currency }: { transactions: TransactionResponse[]; currency: string }) {
   return (
-    <div className="table-scroll">
+    <><div className="table-scroll transaction-table-view">
       <table className="holdings-table transactions-table">
         <thead><tr><th>Date</th><th>Asset</th><th>Type</th><th>Quantity</th><th>Price</th><th>Realized P&amp;L</th></tr></thead>
         <tbody>{transactions.map((transaction) => {
-          const createdAt = new Date(transaction.createdAt);
-          const validDate = !Number.isNaN(createdAt.getTime());
+          const details = transactionDetails(transaction);
           return <tr key={transaction.id}>
-            <td><time dateTime={transaction.createdAt}>{validDate ? dateFormatter.format(createdAt) : transaction.createdAt}</time></td>
+            <td><time dateTime={details.dateTime}>{details.desktopDate}</time></td>
             <td><strong>{transaction.assetSymbol}</strong></td>
-            <td><span className={`transaction-type ${transaction.type.toLowerCase()}`}>{transaction.type === "BUY" ? "Buy" : "Sell"}</span></td>
-            <td>{numberFormatter.format(transaction.quantity)}</td>
-            <td>{numberFormatter.format(transaction.price)}</td>
-            <td className={transaction.realizedPnL === null ? "" : transaction.realizedPnL >= 0 ? "positive" : "negative"}>{transaction.realizedPnL === null ? "—" : numberFormatter.format(transaction.realizedPnL)}</td>
+            <td><span className={`transaction-type ${transaction.type.toLowerCase()}`}>{details.typeLabel}</span></td>
+            <td>{details.quantity}</td>
+            <td>{details.price}</td>
+            <td className={transaction.realizedPnL === null ? "" : transaction.realizedPnL >= 0 ? "positive" : "negative"}>{details.realizedPnL}</td>
           </tr>;
         })}</tbody>
       </table>
-    </div>
+    </div><div className="transaction-mobile-list">
+      {transactions.map((transaction) => {
+        const details = transactionDetails(transaction);
+        return <article className="transaction-mobile-row" key={transaction.id}>
+          <div className="transaction-mobile-topline"><time dateTime={details.dateTime}>{details.mobileDate}</time><span className={`transaction-type ${transaction.type.toLowerCase()}`}>{details.typeLabel}</span></div>
+          <strong className="transaction-symbol">{transaction.assetSymbol}</strong>
+          <p className="transaction-calculation">{details.quantity} shares <span aria-hidden="true">×</span><span className="sr-only">at</span> {details.price} {currency}</p>
+          <p className="transaction-total"><span>Total</span> {details.total} {currency}</p>
+          {transaction.realizedPnL !== null && <p className={`transaction-realized ${transaction.realizedPnL >= 0 ? "positive" : "negative"}`}><span>Realized P&amp;L</span> {details.realizedPnL} {currency}</p>}
+        </article>;
+      })}
+    </div></>
   );
 }
 
@@ -149,10 +176,10 @@ export function Transactions() {
   }
 
   return <AppShell>
-    <header className="page-header transactions-header"><div><p className="eyebrow">Activity</p><h1>Transactions</h1><p className="subtitle">Record and review the trades that shape your portfolio.</p></div>{portfoliosQuery.data && portfoliosQuery.data.length > 0 && <div className="header-actions"><label className="portfolio-picker"><span>Portfolio</span><select value={activePortfolioId ?? ""} onChange={(event) => selectPortfolio(Number(event.target.value))}>{portfoliosQuery.data.map((portfolio) => <option key={portfolio.id} value={portfolio.id}>{portfolio.name}</option>)}</select></label>{mode === "api" ? <button className="primary-button" type="button" aria-expanded={showComposer} onClick={() => { setShowComposer((open) => !open); setShowSuccess(false); }}><span aria-hidden="true">+</span> New transaction</button> : <span className="demo-readonly">Sample activity is read-only</span>}</div>}</header>
+    <header className="page-header transactions-header"><div><p className="eyebrow">Activity</p><h1>Transactions</h1><p className="subtitle">Record and review investment activity across your portfolios.</p></div>{portfoliosQuery.data && portfoliosQuery.data.length > 0 && <div className="header-actions"><label className="portfolio-picker"><span>Portfolio</span><select value={activePortfolioId ?? ""} onChange={(event) => selectPortfolio(Number(event.target.value))}>{portfoliosQuery.data.map((portfolio) => <option key={portfolio.id} value={portfolio.id}>{portfolio.name}</option>)}</select></label>{mode === "api" ? <button className="primary-button" type="button" aria-expanded={showComposer} onClick={() => { setShowComposer((open) => !open); setShowSuccess(false); }}><span aria-hidden="true">+</span> New transaction</button> : <span className="demo-readonly">Sample activity is read-only</span>}</div>}</header>
     {portfoliosQuery.isPending && <section className="content-card state-message" aria-live="polite"><div className="loading-mark" /><h3>Loading your portfolios</h3><p>Preparing your transaction workspace…</p></section>}
     {portfoliosQuery.isError && <section className="content-card"><ErrorState title="We couldn’t load your portfolios" message={portfoliosQuery.error.message} retry={() => void portfoliosQuery.refetch()} /></section>}
     {portfoliosQuery.data?.length === 0 && <section className="content-card"><div className="section-heading"><div><p className="eyebrow">Get started</p><h2>Transaction activity</h2></div><span className="quiet-label">No portfolios</span></div><div className="empty-state"><div className="transaction-mark" aria-hidden="true">↗</div><h3>No portfolios yet</h3><p>Add a portfolio before recording its first transaction.</p></div></section>}
-    {selectedPortfolio && <div className="transactions-layout">{showSuccess && mode === "api" && <div className="success-message" role="status">Transaction saved. Portfolio values and holdings are being refreshed.</div>}{showComposer && mode === "api" && <TransactionForm portfolioId={selectedPortfolio.id} portfolioName={selectedPortfolio.name} close={() => setShowComposer(false)} saved={() => setShowSuccess(true)} />}<TransactionHistory portfolioId={selectedPortfolio.id} portfolioName={selectedPortfolio.name} /></div>}
+    {selectedPortfolio && <div className="transactions-layout">{showSuccess && mode === "api" && <div className="success-message" role="status">Transaction saved. Portfolio values and holdings are being refreshed.</div>}{showComposer && mode === "api" && <TransactionForm portfolioId={selectedPortfolio.id} portfolioName={selectedPortfolio.name} close={() => setShowComposer(false)} saved={() => setShowSuccess(true)} />}<TransactionHistory portfolioId={selectedPortfolio.id} portfolioName={selectedPortfolio.name} currency={selectedPortfolio.baseCurrency} /></div>}
   </AppShell>;
 }

@@ -133,6 +133,8 @@ h3 { margin-bottom: 9px; font-size: 20px; font-weight: 670; letter-spacing: -.02
 .form-field span em { float: right; color: #8a94a5; font-size: 10px; font-style: normal; font-weight: 600; text-transform: uppercase; }
 .form-field small { color: var(--muted); font-size: 11px; font-weight: 450; line-height: 1.5; }
 .transactions-table th:first-child, .transactions-table td:first-child { min-width: 168px; }
+.transaction-history { min-height: 0; }
+.transaction-mobile-list { display: none; }
 .transaction-type { display: inline-flex; min-width: 48px; align-items: center; justify-content: center; padding: 5px 8px; border-radius: 99px; color: var(--accent-dark); background: var(--surface-soft); font-size: 11px; font-weight: 750; text-transform: uppercase; }
 .transaction-type.buy { color: #176047; background: #edf8f4; }
 .transaction-type.sell { color: #8b3440; background: #fcecef; }
@@ -194,6 +196,33 @@ h3 { margin-bottom: 9px; font-size: 20px; font-weight: 670; letter-spacing: -.02
   .content-card { min-height: 360px; padding: 20px; border-radius: 20px; }
   .empty-state { margin-top: 40px; }
   .portfolio-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 20px; }
+  .demo-notice + .transactions-header { margin-top: -8px; }
+  .transactions-header { gap: 18px; margin-bottom: 18px; }
+  .transactions-header h1 { margin-bottom: 6px; font-size: 34px; }
+  .transactions-header .eyebrow { margin-bottom: 6px; }
+  .transactions-header .subtitle { line-height: 1.5; }
+  .transactions-header .header-actions { gap: 8px; }
+  .transactions-header .portfolio-picker { min-width: 0; }
+  .transactions-header .portfolio-picker select { max-width: 100%; }
+  .transactions-header .demo-readonly { align-self: flex-start; padding: 4px 0 0; }
+  .transaction-history { min-height: 0; padding: 0; overflow: hidden; }
+  .transaction-history .section-heading { align-items: center; padding: 18px 18px 15px; }
+  .transaction-history .section-heading .eyebrow { max-width: min(58vw, 250px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .transaction-history .section-heading h2 { font-size: 20px; }
+  .transaction-history .quiet-label { flex: 0 0 auto; margin-left: 10px; }
+  .transaction-table-view { display: none; }
+  .transaction-mobile-list { display: grid; }
+  .transaction-mobile-row { min-width: 0; padding: 17px 18px 18px; }
+  .transaction-mobile-row + .transaction-mobile-row { border-top: 1px solid var(--line); }
+  .transaction-mobile-topline { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 11px; color: var(--muted); font-size: 12px; font-weight: 600; }
+  .transaction-symbol { display: block; overflow-wrap: anywhere; font-size: 16px; line-height: 1.35; }
+  .transaction-calculation, .transaction-total, .transaction-realized { margin: 5px 0 0; overflow-wrap: anywhere; font-size: 13px; line-height: 1.45; }
+  .transaction-calculation { color: var(--muted); }
+  .transaction-total { font-weight: 680; }
+  .transaction-total span, .transaction-realized span { margin-right: 4px; color: var(--muted); font-weight: 500; }
+  .transaction-realized { font-size: 12px; font-weight: 650; }
+  .transaction-history .empty-state { margin: 34px auto; padding: 0 18px; }
+  .transaction-history .state-message { min-height: 220px; }
 }
 
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; } }
